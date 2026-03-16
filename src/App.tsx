@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { GoogleGenAI, Type, FunctionDeclaration, GenerateContentResponse } from '@google/genai';
-import { Send, Image as ImageIcon, Map, Loader2, AlertCircle, Search, Globe } from 'lucide-react';
+import { Send, Image as ImageIcon, Map, Loader2, AlertCircle, Search, Globe, Wrench } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { clsx, type ClassValue } from 'clsx';
@@ -640,6 +640,31 @@ export default function App() {
                               <span>Generating response...</span>
                             </div>
                           )}
+                        </div>
+                      )}
+
+                      {/* Display tool calls */}
+                      {msg.toolCalls && msg.toolCalls.length > 0 && (
+                        <div className="mt-4 pt-4 border-t border-zinc-800/50">
+                          <div className="text-xs text-zinc-500 mb-2 flex items-center gap-1">
+                            <Wrench className="w-3 h-3" /> Tools Used
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            {msg.toolCalls.map((call, i) => {
+                              const toolDescriptions: { [key: string]: string } = {
+                                queryEarthEngine: "Queries Google Earth Engine for geospatial data analysis.",
+                                searchGoogleMaps: "Searches Google Maps for location-based information.",
+                                googleSearch: "Searches the web for information."
+                              };
+                              const description = toolDescriptions[call.name] || "A tool used for this request.";
+                              return (
+                                <div key={i} title={description} className="flex items-center gap-1 text-xs text-purple-400 bg-purple-400/10 px-2 py-1 rounded border border-purple-400/20 transition-colors cursor-help">
+                                  <Wrench className="w-3 h-3" />
+                                  <span className="truncate max-w-[200px]">{call.name}</span>
+                                </div>
+                              );
+                            })}
+                          </div>
                         </div>
                       )}
 
