@@ -176,7 +176,9 @@ export default function App() {
       setMessages((prev) => [...prev, { role: 'model', text: '', isThinking: 'Initializing analysis...' }]);
 
       const baseConfig: any = {
-        systemInstruction: `You are Aialpha, an advanced geospatial and visual-analysis assistant powered by Google Earth Engine. You have access to Google Search, a custom Earth Engine tool, and a Google Maps search tool. 
+        systemInstruction: `You are Aialpha, an advanced, highly capable geospatial and visual-analysis assistant powered by Google Earth Engine. You possess deep reasoning capabilities and are fully equipped with powerful tools: Google Search, a custom Earth Engine tool, and a Google Maps search tool. 
+
+        Your goal is to provide the most accurate, comprehensive, and detailed responses possible. NEVER give generic or vague answers. If a request is complex, use your tools iteratively and thoroughly to gather all necessary data before synthesizing your final answer. You are significantly more capable than standard LLMs because you can ground your responses in real-time data and specialized geospatial analysis. Always prioritize accuracy, depth, and the full fulfillment of the user's request. If you encounter an issue, do not give up; analyze the problem, adjust your approach, and use your tools to find the solution.
         
         Today's date is: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}
         
@@ -583,6 +585,7 @@ export default function App() {
                       {/* Display tool calls */}
                       {msg.toolCalls && msg.toolCalls.length > 0 && (
                         <div className="space-y-2">
+                          <div className="text-red-500">DEBUG: Tool calls: {JSON.stringify(msg.toolCalls)}</div>
                           {msg.toolCalls.map((call, i) => (
                             <div key={i} className="bg-zinc-900 rounded-lg border border-zinc-800 overflow-hidden text-sm">
                               <div className="flex items-center gap-2 px-3 py-2 bg-zinc-800/50 border-b border-zinc-800">
@@ -640,31 +643,6 @@ export default function App() {
                               <span>Generating response...</span>
                             </div>
                           )}
-                        </div>
-                      )}
-
-                      {/* Display tool calls */}
-                      {msg.toolCalls && msg.toolCalls.length > 0 && (
-                        <div className="mt-4 pt-4 border-t border-zinc-800/50">
-                          <div className="text-xs text-zinc-500 mb-2 flex items-center gap-1">
-                            <Wrench className="w-3 h-3" /> Tools Used
-                          </div>
-                          <div className="flex flex-wrap gap-2">
-                            {msg.toolCalls.map((call, i) => {
-                              const toolDescriptions: { [key: string]: string } = {
-                                queryEarthEngine: "Queries Google Earth Engine for geospatial data analysis.",
-                                searchGoogleMaps: "Searches Google Maps for location-based information.",
-                                googleSearch: "Searches the web for information."
-                              };
-                              const description = toolDescriptions[call.name] || "A tool used for this request.";
-                              return (
-                                <div key={i} title={description} className="flex items-center gap-1 text-xs text-purple-400 bg-purple-400/10 px-2 py-1 rounded border border-purple-400/20 transition-colors cursor-help">
-                                  <Wrench className="w-3 h-3" />
-                                  <span className="truncate max-w-[200px]">{call.name}</span>
-                                </div>
-                              );
-                            })}
-                          </div>
                         </div>
                       )}
 
