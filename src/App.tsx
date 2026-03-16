@@ -16,7 +16,7 @@ const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 // Define Earth Engine Tool
 const queryEarthEngineDeclaration: FunctionDeclaration = {
   name: 'queryEarthEngine',
-  description: 'Queries the Google Earth Engine REST API to perform geospatial analysis, retrieve satellite imagery, or compute statistics. Use this tool when the user asks about satellite data, forest fires, land cover, or any Earth Engine related analysis.',
+  description: 'Queries the Google Earth Engine REST API to perform geospatial analysis, retrieve satellite imagery, or compute statistics. This is your most powerful and accurate tool for planetary-scale data. You are highly encouraged to use this tool proactively for any questions involving climate, temperature, elevation, vegetation indices (NDVI), water bodies, forest fires, land cover, urban expansion, or any environmental analysis. It provides highly accurate, real-world data.',
   parameters: {
     type: Type.OBJECT,
     properties: {
@@ -40,13 +40,13 @@ const queryEarthEngineDeclaration: FunctionDeclaration = {
 // Define Google Maps Tool (delegates to 2.5)
 const searchGoogleMapsDeclaration: FunctionDeclaration = {
   name: 'searchGoogleMaps',
-  description: 'Search Google Maps for places, locations, restaurants, or geographic details. Use this when the user asks for nearby places or specific locations. DO NOT use this for calculating distances or getting directions between two places; use the googleSearch tool for distances and directions instead.',
+  description: 'Search Google Maps for specific physical places, local businesses, restaurants, or points of interest. ONLY use this when looking for a specific establishment or local place. DO NOT use this for calculating distances, getting directions, or answering general knowledge questions (e.g., "What is the capital of France?", "How far is X from Y?"). For general knowledge, facts, distances, or directions, you MUST use the googleSearch tool instead.',
   parameters: {
     type: Type.OBJECT,
     properties: {
       query: {
         type: Type.STRING,
-        description: 'The search query for Google Maps (e.g., "good Italian restaurants nearby", "coordinates of Eiffel Tower", "hospitals in San Francisco").',
+        description: 'The search query for Google Maps (e.g., "good Italian restaurants nearby", "hospitals in San Francisco"). DO NOT put general questions here.',
       }
     },
     required: ['query'],
@@ -58,7 +58,7 @@ interface Message {
   text: string;
   files?: { data: string; mimeType: string; name: string }[];
   toolCalls?: { name: string; args: any; result?: any }[];
-  isThinking?: boolean;
+  isThinking?: boolean | string;
   groundingChunks?: any[];
 }
 
@@ -173,7 +173,7 @@ export default function App() {
       contents.push({ role: 'user', parts: newUserParts });
 
       // Add a thinking message
-      setMessages((prev) => [...prev, { role: 'model', text: '', isThinking: true }]);
+      setMessages((prev) => [...prev, { role: 'model', text: '', isThinking: 'Connecting to Aialpha...' }]);
 
       const baseConfig: any = {
         systemInstruction: `You are Aialpha, an advanced geospatial and visual-analysis assistant powered by Google Earth Engine. You have access to Google Search, a custom Earth Engine tool, and a Google Maps search tool. 
@@ -182,12 +182,13 @@ export default function App() {
         
         When asked about geospatial data, satellite imagery, or environmental analysis (like forest fires), use your tools to provide accurate, data-driven answers. Explain your process clearly. You can use all or any of your tools at the same time in a single request if needed to fully answer the user's query. You are never limited to just one tool. 
         
-        - If you need to use Earth Engine, use the queryEarthEngine tool. 
-        - If you need to search for local places, restaurants, or specific locations, use the searchGoogleMaps tool. 
-        - If you need to find the distance between two places, get directions, or find general information, use the googleSearch tool.
+        - Earth Engine is your most powerful and accurate tool. You are highly encouraged to use the queryEarthEngine tool proactively for ANY questions involving climate, temperature, elevation, vegetation, water, land use, or satellite imagery. It has lots of uses and provides the best data.
+        - If you need to search for local places, businesses, restaurants, or specific points of interest, use the searchGoogleMaps tool. DO NOT use this for general questions.
+        - If you need to find the distance between two places, get directions, find general geographic facts, or search the web, use the googleSearch tool.
         - If the user provides a visual description of a location (e.g., "railroad tracks looking north at Chicago skyline Willis Tower with large wall on right"), DO NOT refuse the request. You CAN and MUST process visual descriptions. Use your googleSearch and searchGoogleMaps tools to triangulate the location, find viewpoints, or identify the specific place being described based on the landmarks and spatial relationships provided.
         - You are highly encouraged to proactively extract and analyze any or all media on websites and searches when you need to. You do not need to ask for permission to do this.
         - You can reverse image search any image when you need to without asking. This includes images you find during your analysis (such as screen captures, satellite data, images attached to websites, etc.) and images uploaded by the user. Analyze the image carefully to identify its contents, landmarks, or text, and use the googleSearch tool to reverse-search those specific details to find its source, location, or related information.
+        - CRITICAL: Before calling ANY tool, you MUST output a short sentence or phrase describing what you are currently doing in real time. For example: "reverse searching image...", "searching Google...", "getting satellite data...", "analyzing map results...". Do not output any other text before the tool call.
         
         If Earth Engine credentials are not configured, explain that to the user and use Google Search/Maps as a fallback to provide the best possible answer.`,
         tools: [
@@ -255,7 +256,7 @@ export default function App() {
         // Add a single message showing all tool calls
         setMessages((prev) => [...prev, { 
           role: 'model', 
-          text: `*Executing tools...*`,
+          text: '',
           toolCalls: functionCalls.map(c => ({ name: c.name, args: c.args }))
         }]);
 
@@ -308,9 +309,10 @@ export default function App() {
               // Delegate to gemini-2.5-flash for Google Maps tool and stream the response
               const mapsResponseStream = await ai.models.generateContentStream({
                 model: 'gemini-2.5-flash',
-                contents: args.query,
+                contents: `Please search Google Maps for the following query and provide a helpful summary of the locations found: ${args.query}`,
                 config: {
-                  tools: [{ googleMaps: {} }]
+                  tools: [{ googleMaps: {} }],
+                  systemInstruction: "You are a Google Maps search assistant. You MUST use the googleMaps tool to find the requested locations, businesses, or points of interest. Summarize the results clearly."
                 }
               });
               
@@ -388,7 +390,7 @@ export default function App() {
           }
         ];
 
-        setMessages((prev) => [...prev, { role: 'model', text: '', isThinking: true }]);
+        setMessages((prev) => [...prev, { role: 'model', text: '', isThinking: 'Processing tool results...' }]);
 
         const followUpConfig: any = {
           ...baseConfig
@@ -523,7 +525,7 @@ export default function App() {
                   {msg.isThinking ? (
                     <div className="flex items-center gap-2 text-emerald-400">
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      <span className="text-sm font-medium">Analyzing geospatial data...</span>
+                      <span className="text-sm font-medium">{typeof msg.isThinking === 'string' ? msg.isThinking : 'Analyzing...'}</span>
                     </div>
                   ) : (
                     <div className="space-y-4">
