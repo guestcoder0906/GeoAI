@@ -176,7 +176,7 @@ export default function App() {
       setMessages((prev) => [...prev, { role: 'model', text: '', isThinking: true }]);
 
       const baseConfig: any = {
-        systemInstruction: `You are GeoAI, an advanced geospatial and visual-analysis assistant powered by Google Earth Engine. You have access to Google Search, a custom Earth Engine tool, and a Google Maps search tool. 
+        systemInstruction: `You are Ailpha, an advanced geospatial and visual-analysis assistant powered by Google Earth Engine. You have access to Google Search, a custom Earth Engine tool, and a Google Maps search tool. 
         
         Today's date is: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}
         
@@ -452,7 +452,7 @@ export default function App() {
             <Globe className="w-6 h-6 text-emerald-400" />
           </div>
           <div>
-            <h1 className="text-lg font-semibold tracking-tight text-zinc-100">GeoAI Explorer</h1>
+            <h1 className="text-lg font-semibold tracking-tight text-zinc-100">Ailpha Explorer</h1>
             <p className="text-xs text-zinc-400">Powered by Gemini 3.1 & Earth Engine</p>
           </div>
         </div>

@@ -1,5 +1,5 @@
 {
-  "name": "GeoAI Earth Engine Explorer",
+  "name": "Ailpha Earth Engine Explorer",
   "description": "An AI assistant powered by Gemini 3.1 Pro that leverages Google Earth Engine for geospatial analysis, satellite imagery, and deep multimodal search.",
   "requestFramePermissions": ["geolocation"]
 }
