@@ -184,7 +184,7 @@ export default function App() {
         1. NEVER dismiss an image as a "generic stock photo" or "impossible to locate" without exhaustive effort.
         2. Even if an image appears generic, you MUST analyze it in detail. Break down every component: infrastructure types, vegetation, road markings, sky patterns, terrain, and any visible text or symbols.
         3. Use your tools (Google Search, Maps, Earth Engine) to find similar landscapes, infrastructure, or geographic patterns.
-        4. If an exact location cannot be pinpointed, provide a reasoned, probabilistic analysis. Suggest the most likely regions, countries, or environments based on the visual evidence, and explain the reasoning behind your suggestions.
+        4. If an exact location cannot be pinpointed, provide a reasoned, probabilistic analysis and your BEST EDUCATED GUESS for coordinates based on the visual evidence (vegetation, weather, features, etc.). Explain the reasoning behind your guess and state clearly that it is an estimate.
         5. If you cannot find an exact match, describe the *type* of environment and where such scenes are commonly found, rather than just saying it's impossible.
         6. You are significantly more capable than standard LLMs because you can ground your responses in real-time data and specialized geospatial analysis. 
         
@@ -657,6 +657,31 @@ export default function App() {
                               <span>Generating response...</span>
                             </div>
                           )}
+                        </div>
+                      )}
+
+                      {/* Display tool calls */}
+                      {msg.toolCalls && msg.toolCalls.length > 0 && (
+                        <div className="mt-4 pt-4 border-t border-zinc-800/50">
+                          <div className="text-xs text-zinc-500 mb-2 flex items-center gap-1">
+                            <Wrench className="w-3 h-3" /> Tools Used
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            {msg.toolCalls.map((call, i) => {
+                              const toolDescriptions: { [key: string]: string } = {
+                                queryEarthEngine: "Queries Google Earth Engine for geospatial data analysis.",
+                                searchGoogleMaps: "Searches Google Maps for location-based information.",
+                                googleSearch: "Searches the web for information."
+                              };
+                              const description = toolDescriptions[call.name] || "A tool used for this request.";
+                              return (
+                                <div key={i} title={description} className="flex items-center gap-1 text-xs text-purple-400 bg-purple-400/10 px-2 py-1 rounded border border-purple-400/20 transition-colors cursor-help">
+                                  <Wrench className="w-3 h-3" />
+                                  <span className="truncate max-w-[200px]">{call.name}</span>
+                                </div>
+                              );
+                            })}
+                          </div>
                         </div>
                       )}
 
