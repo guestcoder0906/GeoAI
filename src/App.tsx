@@ -645,7 +645,7 @@ export default function App() {
                       )}
 
                       {/* Display text content */}
-                      {msg.text !== undefined && (msg.text || (msg.role === 'model' && !msg.toolCalls && !msg.isThinking)) && (
+                      {msg.text !== undefined && (msg.text || (msg.role === 'model' && (!msg.toolCalls || msg.toolCalls.length === 0) && !msg.isThinking)) && (
                         <div className="prose prose-invert prose-emerald max-w-none prose-p:leading-relaxed prose-pre:bg-zinc-900 prose-pre:border prose-pre:border-zinc-800">
                           {msg.text ? (
                             <ReactMarkdown remarkPlugins={[remarkGfm]}>
