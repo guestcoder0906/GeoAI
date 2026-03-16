@@ -173,7 +173,7 @@ export default function App() {
       contents.push({ role: 'user', parts: newUserParts });
 
       // Add a thinking message
-      setMessages((prev) => [...prev, { role: 'model', text: '', isThinking: 'Connecting to Aialpha...' }]);
+      setMessages((prev) => [...prev, { role: 'model', text: '', isThinking: `Analyzing: ${userText.substring(0, 50)}${userText.length > 50 ? '...' : ''}` }]);
 
       const baseConfig: any = {
         systemInstruction: `You are Aialpha, an advanced geospatial and visual-analysis assistant powered by Google Earth Engine. You have access to Google Search, a custom Earth Engine tool, and a Google Maps search tool. 
@@ -274,7 +274,7 @@ export default function App() {
               const lastMessage = newMessages[newMessages.length - 1];
               if (lastMessage && lastMessage.toolCalls) {
                 const tc = lastMessage.toolCalls.find(t => t.name === call.name);
-                if (tc) tc.result = { status: 'running' };
+                if (tc) tc.result = { status: 'running', message: `Querying Earth Engine: ${args.explanation || 'geospatial data'}...` };
               }
               return newMessages;
             });
@@ -304,7 +304,7 @@ export default function App() {
               const lastMessage = newMessages[newMessages.length - 1];
               if (lastMessage && lastMessage.toolCalls) {
                 const tc = lastMessage.toolCalls.find(t => t.name === call.name);
-                if (tc) tc.result = { text: '', places: [] };
+                if (tc) tc.result = { text: '', places: [], message: `Searching Google Maps for: ${args.query}...` };
               }
               return newMessages;
             });
@@ -396,7 +396,7 @@ export default function App() {
           }
         ];
 
-        setMessages((prev) => [...prev, { role: 'model', text: '', isThinking: 'Processing tool results...' }]);
+        setMessages((prev) => [...prev, { role: 'model', text: '', isThinking: `Synthesizing results for: ${functionCalls.map(c => c.name).join(', ')}...` }]);
 
         const followUpConfig: any = {
           ...baseConfig
@@ -531,7 +531,15 @@ export default function App() {
                   {msg.isThinking ? (
                     <div className="flex items-center gap-2 text-emerald-400">
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      <span className="text-sm font-medium">{typeof msg.isThinking === 'string' ? msg.isThinking : 'Analyzing...'}</span>
+                      <span className="text-sm font-medium">
+                        {typeof msg.isThinking === 'string' ? (
+                          msg.isThinking.split(/(https?:\/\/[^\s]+)/g).map((part, i) => 
+                            part.match(/https?:\/\/[^\s]+/) ? (
+                              <a key={i} href={part} target="_blank" rel="noreferrer" className="underline hover:text-emerald-300">{part}</a>
+                            ) : part
+                          )
+                        ) : 'Analyzing...'}
+                      </span>
                     </div>
                   ) : (
                     <div className="space-y-4">
@@ -589,7 +597,7 @@ export default function App() {
                                   ) : call.result.status === 'running' ? (
                                     <div className="flex items-center gap-2 text-emerald-400/80 text-sm">
                                       <Loader2 className="w-3 h-3 animate-spin" />
-                                      <span>Executing query...</span>
+                                      <span>{call.result.message || 'Executing query...'}</span>
                                     </div>
                                   ) : (
                                     <pre className="text-xs text-emerald-400/80 font-mono">
@@ -613,7 +621,7 @@ export default function App() {
                           ) : (
                             <div className="flex items-center gap-2 text-emerald-400/80 text-sm font-medium">
                               <Loader2 className="w-4 h-4 animate-spin" />
-                              <span>Thinking...</span>
+                              <span>Generating response...</span>
                             </div>
                           )}
                         </div>
