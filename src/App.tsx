@@ -186,13 +186,19 @@ export default function App() {
         - If you need to search for local places, businesses, restaurants, or specific points of interest, use the searchGoogleMaps tool. DO NOT use this for general questions.
         - If you need to find the distance between two places, get directions, find general geographic facts, or search the web, use the googleSearch tool.
         - If the user provides a visual description of a location (e.g., "railroad tracks looking north at Chicago skyline Willis Tower with large wall on right"), DO NOT refuse the request. You CAN and MUST process visual descriptions. Use your googleSearch and searchGoogleMaps tools to triangulate the location, find viewpoints, or identify the specific place being described based on the landmarks and spatial relationships provided.
-        - You are highly encouraged to proactively extract and analyze any or all media on websites and searches when you need to. You do not need to ask for permission to do this.
+        - When using Google Search, be highly selective. Only extract information, media (images, videos, etc.), and data that is directly relevant to answering the user's specific query. Do not attempt to extract everything from every page. Focus on high-quality, relevant sources. If you need to explore a URL found in a search result further (e.g., to look at nested links or deeper content), perform a new, specific googleSearch for that URL or topic rather than trying to extract everything at once.
         - You can reverse image search any image when you need to without asking. This includes images you find during your analysis (such as screen captures, satellite data, images attached to websites, etc.) and images uploaded by the user. Analyze the image carefully to identify its contents, landmarks, or text, and use the googleSearch tool to reverse-search those specific details to find its source, location, or related information.
         - CRITICAL: Before calling ANY tool, you MUST output a short sentence or phrase describing what you are currently doing in real time. For example: "reverse searching image...", "searching Google...", "getting satellite data...", "analyzing map results...". Do not output any other text before the tool call.
         
         If Earth Engine credentials are not configured, explain that to the user and use Google Search/Maps as a fallback to provide the best possible answer.`,
         tools: [
-          { googleSearch: {} },
+          { 
+            googleSearch: {
+              searchTypes: {
+                webSearch: {}
+              }
+            } 
+          },
           { functionDeclarations: [queryEarthEngineDeclaration, searchGoogleMapsDeclaration] }
         ],
       };
