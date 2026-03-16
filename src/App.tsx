@@ -67,7 +67,7 @@ export default function App() {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
-  const [selectedModel, setSelectedModel] = useState<'gemini-3.1-pro-preview' | 'gemini-3.1-flash-lite-preview'>('gemini-3.1-flash-lite-preview');
+  const [selectedModel, setSelectedModel] = useState<'gemini-3.1-pro-preview' | 'gemini-3.1-flash-lite-preview'>('gemini-3.1-pro-preview');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -183,7 +183,7 @@ export default function App() {
         CRITICAL RULES FOR IMAGE ANALYSIS & GEOSPATIAL QUERIES:
         1. NEVER dismiss an image as a "generic stock photo" or "impossible to locate" without exhaustive effort.
         2. Even if an image appears generic, you MUST analyze it in detail. Break down every component: infrastructure types, vegetation, road markings, sky patterns, terrain, and any visible text or symbols.
-        3. You MUST proactively use your tools (Google Search, Maps, Earth Engine) to find similar landscapes, infrastructure, or geographic patterns.
+        3. YOU MUST PROACTIVELY USE YOUR TOOLS. If you are not using a tool, you are likely failing to answer the user's question.
         4. If an exact location cannot be pinpointed, provide a reasoned, probabilistic analysis and your BEST EDUCATED GUESS for coordinates based on the visual evidence (vegetation, weather, features, etc.). Explain the reasoning behind your guess and state clearly that it is an estimate.
         5. If you cannot find an exact match, describe the *type* of environment and where such scenes are commonly found, rather than just saying it's impossible.
         6. You are significantly more capable than standard LLMs because you can ground your responses in real-time data and specialized geospatial analysis. 
