@@ -176,7 +176,7 @@ export default function App() {
       setMessages((prev) => [...prev, { role: 'model', text: '', isThinking: true }]);
 
       const baseConfig: any = {
-        systemInstruction: `You are Ailpha, an advanced geospatial and visual-analysis assistant powered by Google Earth Engine. You have access to Google Search, a custom Earth Engine tool, and a Google Maps search tool. 
+        systemInstruction: `You are Aialpha, an advanced geospatial and visual-analysis assistant powered by Google Earth Engine. You have access to Google Search, a custom Earth Engine tool, and a Google Maps search tool. 
         
         Today's date is: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}
         
@@ -452,7 +452,7 @@ export default function App() {
             <Globe className="w-6 h-6 text-emerald-400" />
           </div>
           <div>
-            <h1 className="text-lg font-semibold tracking-tight text-zinc-100">Ailpha Explorer</h1>
+            <h1 className="text-lg font-semibold tracking-tight text-zinc-100">Aialpha</h1>
             <p className="text-xs text-zinc-400">Powered by Gemini 3.1 & Earth Engine</p>
           </div>
         </div>
@@ -480,7 +480,7 @@ export default function App() {
           <div className="flex flex-col items-center justify-center h-full text-center space-y-4 max-w-2xl mx-auto">
             <div className="p-4 bg-zinc-900 rounded-2xl border border-zinc-800 shadow-xl">
               <Globe className="w-12 h-12 text-emerald-500 mx-auto mb-4" />
-              <h2 className="text-2xl font-medium text-zinc-100 mb-2">Earth Engine AI Assistant</h2>
+              <h2 className="text-2xl font-medium text-zinc-100 mb-2">Aialpha Assistant</h2>
               <p className="text-zinc-400 text-sm leading-relaxed">
                 Upload satellite imagery, ask about environmental changes, or request geospatial analysis. 
                 I use Google Earth Engine and Google Search to provide precise, data-driven answers.
