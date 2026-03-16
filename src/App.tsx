@@ -67,7 +67,7 @@ export default function App() {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
-  const [selectedModel, setSelectedModel] = useState<'gemini-3.1-pro-preview' | 'gemini-3-flash-preview'>('gemini-3.1-pro-preview');
+  const [selectedModel, setSelectedModel] = useState<'gemini-3.1-pro-preview' | 'gemini-3.1-flash-preview'>('gemini-3.1-flash-preview');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -173,7 +173,7 @@ export default function App() {
       contents.push({ role: 'user', parts: newUserParts });
 
       // Add a thinking message
-      setMessages((prev) => [...prev, { role: 'model', text: '', isThinking: `Analyzing: ${userText.substring(0, 50)}${userText.length > 50 ? '...' : ''}` }]);
+      setMessages((prev) => [...prev, { role: 'model', text: '', isThinking: 'Initializing analysis...' }]);
 
       const baseConfig: any = {
         systemInstruction: `You are Aialpha, an advanced geospatial and visual-analysis assistant powered by Google Earth Engine. You have access to Google Search, a custom Earth Engine tool, and a Google Maps search tool. 
@@ -203,11 +203,18 @@ export default function App() {
         ],
       };
 
-      const responseStream = await ai.models.generateContentStream({
-        model: selectedModel,
-        contents,
-        config: baseConfig,
-      });
+      let responseStream;
+      try {
+        responseStream = await ai.models.generateContentStream({
+          model: selectedModel,
+          contents,
+          config: baseConfig,
+        });
+      } catch (error) {
+        console.error("Error generating content stream:", error);
+        setMessages((prev) => prev.map((m) => m.isThinking ? { ...m, isThinking: 'Error: Failed to connect to AI.' } : m));
+        return;
+      }
 
       // Remove thinking message
       setMessages((prev) => prev.filter((m) => !m.isThinking));
@@ -220,32 +227,41 @@ export default function App() {
       let functionCalls: any[] = [];
       let responseContent: any = null;
 
-      for await (const chunk of responseStream) {
-        if (chunk.text) {
-          modelText += chunk.text;
-          setMessages((prev) => {
-            const newMessages = [...prev];
-            newMessages[newMessages.length - 1].text = modelText;
-            return newMessages;
-          });
-        }
-        if (chunk.functionCalls) {
-          functionCalls.push(...chunk.functionCalls);
-        }
-        if (chunk.candidates?.[0]?.groundingMetadata?.groundingChunks) {
-          groundingChunks = chunk.candidates[0].groundingMetadata.groundingChunks;
-          setMessages((prev) => {
-            const newMessages = [...prev];
-            newMessages[newMessages.length - 1].groundingChunks = groundingChunks;
-            return newMessages;
-          });
-        }
-        if (chunk.candidates?.[0]?.content) {
-          if (!responseContent) {
-            responseContent = { role: 'model', parts: [] };
+      try {
+        for await (const chunk of responseStream) {
+          if (chunk.text) {
+            modelText += chunk.text;
+            setMessages((prev) => {
+              const newMessages = [...prev];
+              newMessages[newMessages.length - 1].text = modelText;
+              return newMessages;
+            });
           }
-          responseContent.parts.push(...chunk.candidates[0].content.parts);
+          if (chunk.functionCalls) {
+            functionCalls.push(...chunk.functionCalls);
+          }
+          if (chunk.candidates?.[0]?.groundingMetadata?.groundingChunks) {
+            groundingChunks = chunk.candidates[0].groundingMetadata.groundingChunks;
+            setMessages((prev) => {
+              const newMessages = [...prev];
+              newMessages[newMessages.length - 1].groundingChunks = groundingChunks;
+              return newMessages;
+            });
+          }
+          if (chunk.candidates?.[0]?.content) {
+            if (!responseContent) {
+              responseContent = { role: 'model', parts: [] };
+            }
+            responseContent.parts.push(...chunk.candidates[0].content.parts);
+          }
         }
+      } catch (error) {
+        console.error("Error processing stream:", error);
+        setMessages((prev) => {
+          const newMessages = [...prev];
+          newMessages[newMessages.length - 1].text += "\n\nError: Stream interrupted.";
+          return newMessages;
+        });
       }
 
       const toolCalls: { name: string; args: any; result?: any }[] = [];
@@ -396,7 +412,7 @@ export default function App() {
           }
         ];
 
-        setMessages((prev) => [...prev, { role: 'model', text: '', isThinking: `Synthesizing results for: ${functionCalls.map(c => c.name).join(', ')}...` }]);
+        setMessages((prev) => [...prev, { role: 'model', text: '', isThinking: 'Synthesizing tool results...' }]);
 
         const followUpConfig: any = {
           ...baseConfig
@@ -473,8 +489,8 @@ export default function App() {
               3.1 Pro
             </button>
             <button
-              onClick={() => setSelectedModel('gemini-3-flash-preview')}
-              className={cn("px-3 py-1.5 text-xs font-medium rounded-md transition-colors", selectedModel === 'gemini-3-flash-preview' ? "bg-zinc-800 text-zinc-100 shadow-sm" : "text-zinc-400 hover:text-zinc-200")}
+              onClick={() => setSelectedModel('gemini-3.1-flash-preview')}
+              className={cn("px-3 py-1.5 text-xs font-medium rounded-md transition-colors", selectedModel === 'gemini-3.1-flash-preview' ? "bg-zinc-800 text-zinc-100 shadow-sm" : "text-zinc-400 hover:text-zinc-200")}
             >
               3.1 Flash
             </button>
@@ -715,7 +731,7 @@ export default function App() {
                   <input 
                     type="file" 
                     multiple 
-                    accept="image/*,video/*,audio/*" 
+                    accept="image/*,video/*,audio/*,application/pdf" 
                     className="hidden" 
                     onChange={handleFileSelect}
                   />
