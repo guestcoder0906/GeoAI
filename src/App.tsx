@@ -183,11 +183,22 @@ export default function App() {
         CRITICAL RULES FOR IMAGE ANALYSIS & GEOSPATIAL QUERIES:
         1. NEVER dismiss an image as a "generic stock photo" or "impossible to locate" without exhaustive effort.
         2. Even if an image appears generic, you MUST analyze it in detail. Break down every component: infrastructure types, vegetation, road markings, sky patterns, terrain, and any visible text or symbols.
-        3. YOU MUST PROACTIVELY USE YOUR TOOLS. If you are not using a tool, you are likely failing to answer the user's question.
+        3. YOU MUST PROACTIVELY USE YOUR TOOLS. If you are not using a tool, you are likely failing to answer the user's question. DO NOT ask the user to perform tasks you can do with your tools. YOU ARE THE ASSISTANT, DO THE WORK.
         4. If an exact location cannot be pinpointed, provide a reasoned, probabilistic analysis and your BEST EDUCATED GUESS for coordinates based on the visual evidence (vegetation, weather, features, etc.). Explain the reasoning behind your guess and state clearly that it is an estimate.
         5. If you cannot find an exact match, describe the *type* of environment and where such scenes are commonly found, rather than just saying it's impossible.
         6. You are significantly more capable than standard LLMs because you can ground your responses in real-time data and specialized geospatial analysis. 
-        7. When asked to find specific shapes (e.g., "island shaped like a lamp"), you MUST use Earth Engine and Maps to scan relevant regions. Do not refuse based on the difficulty of the task.
+        7. When asked to find specific shapes (e.g., "island shaped like a lamp"), you MUST use Earth Engine and Maps to scan relevant regions. DO NOT refuse based on the difficulty of the task. ACTUALLY PERFORM THE SEARCH.
+        
+        EXAMPLES OF TOOL USAGE:
+        - For Earth Engine (queryEarthEngine):
+          - To get NDVI for an area: 
+            endpoint: "projects/earthengine-public/image:computePixels"
+            payload: { "expression": "image.normalizedDifference(['B5', 'B4'])", "image": { "image": { "id": "COPERNICUS/S2_SR/20230101T100031_20230101T100031_T32TQM" } } }
+            explanation: "Calculating NDVI for a specific Sentinel-2 image."
+          - To get a list of images in a collection:
+            endpoint: "projects/earthengine-public/listImages"
+            payload: { "collectionId": "COPERNICUS/S2_SR", "filter": { "date": { "start": "2023-01-01", "end": "2023-01-31" } } }
+            explanation: "Listing Sentinel-2 images for January 2023."
         
         GENERAL BEHAVIOR:
         - NEVER give generic or vague answers. 
@@ -662,27 +673,30 @@ export default function App() {
                         </div>
                       )}
 
-                      {/* Display tool calls */}
-                      {msg.toolCalls && msg.toolCalls.length > 0 && (
+                      {msg.role === 'model' && (
                         <div className="mt-4 pt-4 border-t border-zinc-800/50">
                           <div className="text-xs text-zinc-500 mb-2 flex items-center gap-1">
                             <Wrench className="w-3 h-3" /> Tools Used
                           </div>
                           <div className="flex flex-wrap gap-2">
-                            {msg.toolCalls.map((call, i) => {
-                              const toolDescriptions: { [key: string]: string } = {
-                                queryEarthEngine: "Queries Google Earth Engine for geospatial data analysis.",
-                                searchGoogleMaps: "Searches Google Maps for location-based information.",
-                                googleSearch: "Searches the web for information."
-                              };
-                              const description = toolDescriptions[call.name] || "A tool used for this request.";
-                              return (
-                                <div key={i} title={description} className="flex items-center gap-1 text-xs text-purple-400 bg-purple-400/10 px-2 py-1 rounded border border-purple-400/20 transition-colors cursor-help">
-                                  <Wrench className="w-3 h-3" />
-                                  <span className="truncate max-w-[200px]">{call.name}</span>
-                                </div>
-                              );
-                            })}
+                            {msg.toolCalls && msg.toolCalls.length > 0 ? (
+                              msg.toolCalls.map((call, i) => {
+                                const toolDescriptions: { [key: string]: string } = {
+                                  queryEarthEngine: "Queries Google Earth Engine for geospatial data analysis.",
+                                  searchGoogleMaps: "Searches Google Maps for location-based information.",
+                                  googleSearch: "Searches the web for information."
+                                };
+                                const description = toolDescriptions[call.name] || "A tool used for this request.";
+                                return (
+                                  <div key={i} title={description} className="flex items-center gap-1 text-xs text-purple-400 bg-purple-400/10 px-2 py-1 rounded border border-purple-400/20 transition-colors cursor-help">
+                                    <Wrench className="w-3 h-3" />
+                                    <span className="truncate max-w-[200px]">{call.name}</span>
+                                  </div>
+                                );
+                              })
+                            ) : (
+                              <div className="text-xs text-zinc-600 italic">No tools used</div>
+                            )}
                           </div>
                         </div>
                       )}
