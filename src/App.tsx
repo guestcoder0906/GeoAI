@@ -67,7 +67,7 @@ export default function App() {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
-  const [selectedModel, setSelectedModel] = useState<'gemini-3.1-pro-preview' | 'gemini-3.1-flash-preview'>('gemini-3.1-flash-preview');
+  const [selectedModel, setSelectedModel] = useState<'gemini-3.1-pro-preview' | 'gemini-3.1-flash-lite-preview'>('gemini-3.1-flash-lite-preview');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -489,8 +489,8 @@ export default function App() {
               3.1 Pro
             </button>
             <button
-              onClick={() => setSelectedModel('gemini-3.1-flash-preview')}
-              className={cn("px-3 py-1.5 text-xs font-medium rounded-md transition-colors", selectedModel === 'gemini-3.1-flash-preview' ? "bg-zinc-800 text-zinc-100 shadow-sm" : "text-zinc-400 hover:text-zinc-200")}
+              onClick={() => setSelectedModel('gemini-3.1-flash-lite-preview')}
+              className={cn("px-3 py-1.5 text-xs font-medium rounded-md transition-colors", selectedModel === 'gemini-3.1-flash-lite-preview' ? "bg-zinc-800 text-zinc-100 shadow-sm" : "text-zinc-400 hover:text-zinc-200")}
             >
               3.1 Flash
             </button>
